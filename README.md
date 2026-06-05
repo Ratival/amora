@@ -1,87 +1,79 @@
-# Welcome to React Router!
+<div align="center">
 
-A modern, production-ready template for building full-stack React applications using React Router.
+# Amora
+### Premium Animated Digital Wedding Invitation Platform
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+<p>
+  <img src="https://img.shields.io/badge/React_Router-v7-111111?style=flat-square" />
+  <img src="https://img.shields.io/badge/Bun-Package_Manager-111111?style=flat-square" />
+  <img src="https://img.shields.io/badge/Golang-Gin-111111?style=flat-square" />
+  <img src="https://img.shields.io/badge/PostgreSQL-111111?style=flat-square" />
+  <img src="https://img.shields.io/badge/License-Proprietary-c9a227?style=flat-square" />
+</p>
 
-## Features
+*Warm. Elegant. Timeless.*
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
-## Getting Started
-
-### Installation
-
-Install the dependencies:
-
-```bash
-npm install
-```
-
-### Development
-
-Start the development server with HMR:
-
-```bash
-npm run dev
-```
-
-Your application will be available at `http://localhost:5173`.
-
-## Building for Production
-
-Create a production build:
-
-```bash
-npm run build
-```
-
-## Deployment
-
-### Docker Deployment
-
-To build and run using Docker:
-
-```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
-```
-
-The containerized application can be deployed to any platform that supports Docker, including:
-
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
-
-### DIY Deployment
-
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+</div>
 
 ---
 
-Built with ❤️ using React Router.
+Amora is a storytelling platform for modern weddings.
+Designed for couples who want more than a digital invitation, Amora transforms wedding announcements into elegant, cinematic experiences that feel personal, emotional, and memorable.
+
+## Experience
+- Personalized guest invitations
+- Cinematic storytelling
+- RSVP management
+- Guest management
+- Wedding wishes
+- Invitation analytics
+
+## Technology Stack
+
+### Frontend
+- React Router
+- React
+- TypeScript
+- Tailwind CSS
+- Framer Motion
+
+### Backend
+- Golang
+- Gin
+- GORM
+- PostgreSQL
+
+### Infrastructure
+- Docker
+- Nginx
+- Redis (Optional)
+- Backblaze B2 / Cloudinary
+
+## Development
+
+Install dependencies:
+```bash
+bun install
+```
+
+Start the development server:
+```bash
+bun run dev
+```
+
+Build for production:
+```bash
+bun run build
+```
+
+## Vision
+
+> “This feels like a real luxury wedding experience.”
+
+Amora is not an invitation generator.
+It is a storytelling platform designed to create wedding experiences that feel elegant, emotional, and timeless.
+
+## License
+
+Copyright © 2026 Ratival.
+All Rights Reserved.
