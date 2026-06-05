@@ -3,12 +3,11 @@
 # Amora
 ### Premium Animated Digital Wedding Invitation Platform
 
-<p>
-  <img src="https://img.shields.io/badge/React_Router-v7-111111?style=flat-square" />
-  <img src="https://img.shields.io/badge/Bun-Package_Manager-111111?style=flat-square" />
-  <img src="https://img.shields.io/badge/Golang-Gin-111111?style=flat-square" />
-  <img src="https://img.shields.io/badge/PostgreSQL-111111?style=flat-square" />
-  <img src="https://img.shields.io/badge/License-Proprietary-c9a227?style=flat-square" />
+<p align="center">
+  <img src="https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white" />
+  <img src="https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white" />
+  <img src="https://img.shields.io/badge/Golang-00ADD8?style=for-the-badge&logo=go&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" />
 </p>
 
 *Warm. Elegant. Timeless.*
