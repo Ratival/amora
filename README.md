@@ -1,9 +1,10 @@
 <div align="center">
 
 # Amora
+
 ### Premium Animated Digital Wedding Invitation Platform
 
-<p align="center">
+<p>
   <img src="https://img.shields.io/badge/React_Router-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white" />
   <img src="https://img.shields.io/badge/Bun-000000?style=for-the-badge&logo=bun&logoColor=white" />
   <img src="https://img.shields.io/badge/Golang-00ADD8?style=for-the-badge&logo=go&logoColor=white" />
@@ -17,62 +18,34 @@
 ---
 
 Amora is a storytelling platform for modern weddings.
+
 Designed for couples who want more than a digital invitation, Amora transforms wedding announcements into elegant, cinematic experiences that feel personal, emotional, and memorable.
 
-## Experience
+## Highlights
+
 - Personalized guest invitations
-- Cinematic storytelling
-- RSVP management
-- Guest management
-- Wedding wishes
+- Cinematic storytelling experience
+- Elegant RSVP management
+- Guest management dashboard
+- Wedding wishes collection
 - Invitation analytics
 
-## Technology Stack
+## Built With
 
-### Frontend
-- React Router
-- React
-- TypeScript
-- Tailwind CSS
-- Framer Motion
-
-### Backend
-- Golang
-- Gin
-- GORM
-- PostgreSQL
-
-### Infrastructure
-- Docker
-- Nginx
-- Redis (Optional)
-- Backblaze B2 / Cloudinary
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=react,ts,tailwind,postgres,docker,go" />
+</p>
 
 ## Development
+This is the monorepo application that including both the frontend and backend in a single codebase. Make sure to have Bun and Go installed on your machine.
 
-Install dependencies:
+### Frontend
 ```bash
 bun install
-```
-
-Start the development server:
-```bash
 bun run dev
 ```
 
-Build for production:
+### Backend
 ```bash
-bun run build
+go run main.go
 ```
-
-## Vision
-
-> “This feels like a real luxury wedding experience.”
-
-Amora is not an invitation generator.
-It is a storytelling platform designed to create wedding experiences that feel elegant, emotional, and timeless.
-
-## License
-
-Copyright © 2026 Ratival.
-All Rights Reserved.
