@@ -13,10 +13,12 @@
 html,
 body {
   @apply bg-white dark:bg-gray-950;
+  overflow-x: hidden;
+  max-width: 100vw;
+}
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 @theme inline {

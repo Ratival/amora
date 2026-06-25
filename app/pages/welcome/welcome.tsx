@@ -353,7 +353,7 @@ export const Welcome = () => {
         {/* Hero container */}
         <div
           ref={heroRef}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-screen h-screen md:w-[calc(100vw-80px)] md:h-[calc(100vh-80px)] md:rounded-3xl overflow-hidden"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-full h-screen md:w-[calc(100vw-80px)] md:h-[calc(100vh-80px)] md:rounded-3xl overflow-hidden"
         >
           {/* Hero image */}
           <div ref={heroImgRef} className="absolute inset-0">
@@ -394,7 +394,7 @@ export const Welcome = () => {
         ref={textSectionRef}
         className="flex items-center justify-center min-h-screen bg-[#F8F5EF] px-6"
       >
-        <p className="invitation-text font-['Instrument_Serif'] text-3xl md:text-5xl italic text-center leading-relaxed max-w-4xl">
+        <p className="invitation-text font-['Instrument_Serif'] text-3xl md:text-5xl italic text-center leading-relaxed max-w-5xl">
           {INVITATION_TEXT.split(" ").map((word, i) => (
             <span
               key={i}

@@ -8,6 +8,8 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import { MiniPlayer } from "./components/mini-player";
+import { SmoothScroll } from "./components/smooth-scroll";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -34,6 +36,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <MiniPlayer />
+        <SmoothScroll />
         <ScrollRestoration />
         <Scripts />
       </body>
