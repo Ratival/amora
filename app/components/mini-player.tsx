@@ -25,7 +25,9 @@ export function MiniPlayer() {
   };
 
   useEffect(() => {
-    document.body.style.overflow = opened ? "" : "hidden";
+    const val = opened ? "" : "hidden";
+    document.documentElement.style.overflow = val;
+    document.body.style.overflow = val;
   }, [opened]);
 
   return (
@@ -39,12 +41,12 @@ export function MiniPlayer() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, y: "-100%" }}
             transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#1A1816]"
+            className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#FAF5EE]"
           >
             <div className="absolute inset-0">
               <Particles
                 particleCount={150}
-                particleColors={["#C8A96B", "#E8D5A3", "#FFFFFF"]}
+                particleColors={["#C86D51", "#D97D54", "#E07A5F", "#EBB15B", "#C26749"]}
                 particleSpread={10}
                 speed={0.05}
                 particleBaseSize={80}
@@ -61,7 +63,7 @@ export function MiniPlayer() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="relative z-10 font-['Instrument_Serif'] text-[#C8A96B]/80 text-xs tracking-[0.4em] uppercase mb-6"
+              className="relative z-10 font-['Instrument_Serif'] text-[#C86D51] text-xs tracking-[0.4em] uppercase mb-6 font-medium"
             >
               The Wedding of
             </motion.p>
@@ -69,7 +71,7 @@ export function MiniPlayer() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-              className="relative z-10 font-['Instrument_Serif'] text-white text-5xl md:text-7xl italic"
+              className="relative z-10 font-['Instrument_Serif'] text-[#281D19] text-5xl sm:text-6xl md:text-7xl italic text-center px-4"
             >
               Jim & Pam
             </motion.h1>
@@ -80,7 +82,7 @@ export function MiniPlayer() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleOpen}
-              className="relative z-10 mt-12 rounded-full border border-[#C8A96B] px-8 py-3 text-sm font-medium text-[#C8A96B] tracking-wider uppercase transition-colors hover:bg-[#C8A96B] hover:text-[#1A1816]"
+              className="relative z-10 mt-12 rounded-full bg-[#C86D51] px-8 py-3 text-sm font-medium text-[#FAF5EE] tracking-wider uppercase shadow-md transition-all duration-300 hover:bg-[#B85D42] cursor-pointer"
             >
               Open Invitation
             </motion.button>
@@ -96,7 +98,7 @@ export function MiniPlayer() {
             transition={{ delay: 0.5, type: "spring", stiffness: 200, damping: 15 }}
             onClick={toggle}
             aria-label={isPlaying ? "Pause music" : "Play music"}
-            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white/80 shadow-lg backdrop-blur-sm"
+            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#FAF5EE]/90 text-[#281D19] border border-[#E8DCCD] shadow-lg backdrop-blur-sm transition-transform hover:scale-105"
           >
             <motion.span
               key={isPlaying ? "pause" : "play"}
@@ -106,7 +108,7 @@ export function MiniPlayer() {
             >
               {isPlaying ? (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-                  <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75.75v12a.75.75 0 0 1-1.5 0V6a.75.75 0 0 1 .75-.75Zm10.5 0a.75.75 0 0 1 .75.75v12a.75.75 0 0 1-1.5 0V6a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 0 1 .75.75v12a.75.75 0 0 1-1.5 0V6a.75.75 0 0 1-1.5 0V6a.75.75 0 0 1 .75-.75Zm10.5 0a.75.75 0 0 1 .75.75v12a.75.75 0 0 1-1.5 0V6a.75.75 0 0 1 .75-.75Z" clipRule="evenodd" />
                 </svg>
               ) : (
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
