@@ -7,7 +7,9 @@ import { GallerySection } from "~/components/gallery-section";
 import { WishesSection } from "~/components/wishes-section";
 import { FooterSection } from "~/components/footer-section";
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const INVITATION_TEXT = "you're cordially invited to celebrate the story of...";
 
