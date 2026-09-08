@@ -38,32 +38,57 @@ func Connect(dsn string) (*gorm.DB, error) {
 func Migrate(db *gorm.DB) error {
 	log.Println("Running database migrations...")
 
-	// 1. Clean up legacy columns in PostgreSQL that may violate NOT NULL or other constraints
+	// 1. Clean up legacy columns in PostgreSQL safely with IF EXISTS
 	legacyStatements := []string{
-		"ALTER TABLE wishes DROP COLUMN IF EXISTS guest_id CASCADE",
-		"ALTER TABLE wishes DROP COLUMN IF EXISTS invitation_id CASCADE",
-		"ALTER TABLE wishes DROP COLUMN IF EXISTS couple_id CASCADE",
-		"ALTER TABLE wishes DROP COLUMN IF EXISTS user_id CASCADE",
-		"ALTER TABLE guests DROP COLUMN IF EXISTS invitation_id CASCADE",
-		"ALTER TABLE guests DROP COLUMN IF EXISTS couple_id CASCADE",
-		"ALTER TABLE guests DROP COLUMN IF EXISTS user_id CASCADE",
-		"ALTER TABLE gallery_photos DROP COLUMN IF EXISTS invitation_id CASCADE",
-		"ALTER TABLE gallery_photos DROP COLUMN IF EXISTS couple_id CASCADE",
-		"ALTER TABLE gallery_photos DROP COLUMN IF EXISTS user_id CASCADE",
-		"ALTER TABLE wish_replies DROP COLUMN IF EXISTS invitation_id CASCADE",
-		"ALTER TABLE wish_replies DROP COLUMN IF EXISTS couple_id CASCADE",
-		"ALTER TABLE wish_replies DROP COLUMN IF EXISTS guest_id CASCADE",
-		"ALTER TABLE wish_replies DROP COLUMN IF EXISTS user_id CASCADE",
-		"ALTER TABLE users DROP COLUMN IF EXISTS password_hash CASCADE",
-		"ALTER TABLE users DROP COLUMN IF EXISTS couple_id CASCADE",
-		"ALTER TABLE couples DROP COLUMN IF EXISTS invitation_id CASCADE",
-		"ALTER TABLE couples DROP COLUMN IF EXISTS user_id CASCADE",
+		"ALTER TABLE IF EXISTS wishes DROP COLUMN IF EXISTS guest_id CASCADE",
+		"ALTER TABLE IF EXISTS wishes DROP COLUMN IF EXISTS invitation_id CASCADE",
+		"ALTER TABLE IF EXISTS wishes DROP COLUMN IF EXISTS couple_id CASCADE",
+		"ALTER TABLE IF EXISTS wishes DROP COLUMN IF EXISTS user_id CASCADE",
+		"ALTER TABLE IF EXISTS guests DROP COLUMN IF EXISTS invitation_id CASCADE",
+		"ALTER TABLE IF EXISTS guests DROP COLUMN IF EXISTS couple_id CASCADE",
+		"ALTER TABLE IF EXISTS guests DROP COLUMN IF EXISTS user_id CASCADE",
+		"ALTER TABLE IF EXISTS gallery_photos DROP COLUMN IF EXISTS invitation_id CASCADE",
+		"ALTER TABLE IF EXISTS gallery_photos DROP COLUMN IF EXISTS couple_id CASCADE",
+		"ALTER TABLE IF EXISTS gallery_photos DROP COLUMN IF EXISTS user_id CASCADE",
+		"ALTER TABLE IF EXISTS wish_replies DROP COLUMN IF EXISTS invitation_id CASCADE",
+		"ALTER TABLE IF EXISTS wish_replies DROP COLUMN IF EXISTS couple_id CASCADE",
+		"ALTER TABLE IF EXISTS wish_replies DROP COLUMN IF EXISTS guest_id CASCADE",
+		"ALTER TABLE IF EXISTS wish_replies DROP COLUMN IF EXISTS user_id CASCADE",
+		"ALTER TABLE IF EXISTS users DROP COLUMN IF EXISTS password_hash CASCADE",
+		"ALTER TABLE IF EXISTS users DROP COLUMN IF EXISTS couple_id CASCADE",
+		"ALTER TABLE IF EXISTS couples DROP COLUMN IF EXISTS invitation_id CASCADE",
+		"ALTER TABLE IF EXISTS couples DROP COLUMN IF EXISTS user_id CASCADE",
 	}
 	for _, stmt := range legacyStatements {
 		_ = db.Exec(stmt).Error
 	}
 
-	// 2. GORM Migrator checks
+	// 2. Pre-populate columns with safe defaults if tables already exist with rows
+	preMigrateStatements := []string{
+		"ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS name text DEFAULT ''",
+		"UPDATE users SET name = '' WHERE name IS NULL",
+		"ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS email text DEFAULT ''",
+		"UPDATE users SET email = '' WHERE email IS NULL",
+		"ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS password text DEFAULT ''",
+		"UPDATE users SET password = '' WHERE password IS NULL",
+		"ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS role varchar(20) DEFAULT 'couple'",
+		"UPDATE users SET role = 'couple' WHERE role IS NULL",
+		"ALTER TABLE IF EXISTS couples ADD COLUMN IF NOT EXISTS title text DEFAULT ''",
+		"UPDATE couples SET title = '' WHERE title IS NULL",
+		"ALTER TABLE IF EXISTS couples ADD COLUMN IF NOT EXISTS owner_email text DEFAULT ''",
+		"UPDATE couples SET owner_email = '' WHERE owner_email IS NULL",
+		"ALTER TABLE IF EXISTS guests ADD COLUMN IF NOT EXISTS name text DEFAULT ''",
+		"UPDATE guests SET name = '' WHERE name IS NULL",
+		"ALTER TABLE IF EXISTS wishes ADD COLUMN IF NOT EXISTS guest_name text DEFAULT ''",
+		"UPDATE wishes SET guest_name = '' WHERE guest_name IS NULL",
+		"ALTER TABLE IF EXISTS wishes ADD COLUMN IF NOT EXISTS message text DEFAULT ''",
+		"UPDATE wishes SET message = '' WHERE message IS NULL",
+	}
+	for _, stmt := range preMigrateStatements {
+		_ = db.Exec(stmt).Error
+	}
+
+	// 3. GORM Migrator checks
 	m := db.Migrator()
 	if m.HasColumn(&models.User{}, "password_hash") {
 		_ = m.DropColumn(&models.User{}, "password_hash")
