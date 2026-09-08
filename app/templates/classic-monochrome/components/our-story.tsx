@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion, useScroll } from "motion/react";
 import { X } from "lucide-react";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useAuth } from "~/contexts/auth-context";
+import { getFileUrl } from "~/lib/api";
+import type { CoupleProject } from "~/types/dashboard";
 
 interface StoryImage {
   id: number;
@@ -19,9 +20,7 @@ interface Chapter {
   side: "left" | "right";
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const CHAPTERS: Chapter[] = [
+const DEFAULT_CHAPTERS: Chapter[] = [
   {
     id: 1,
     title: "Chapter One",
@@ -51,19 +50,64 @@ const CHAPTERS: Chapter[] = [
   },
 ];
 
-const PHOTOS: StoryImage[] = [
-  { id: 1, image: "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&h=480&fit=crop", caption: "First time we hung out" },
-  { id: 2, image: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&h=480&fit=crop", caption: "That one on campus" },
-  { id: 3, image: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=480&fit=crop", caption: "A random Tuesday" },
-  { id: 4, image: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&h=480&fit=crop", caption: "A favorite city corner" },
-  { id: 5, image: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&h=480&fit=crop", caption: "Weekend walks, shared dreams" },
-  { id: 6, image: "https://images.unsplash.com/photo-1470246973918-29a93221c455?w=600&h=480&fit=crop", caption: "Adventures that brought us closer" },
-  { id: 7, image: "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&h=480&fit=crop", caption: "Everything felt right" },
-  { id: 8, image: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=480&fit=crop", caption: "Counting days together" },
-  { id: 9, image: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&h=480&fit=crop", caption: "Ready for forever" },
+const DEFAULT_PHOTOS: StoryImage[] = [
+  {
+    id: 1,
+    image:
+      "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&h=480&fit=crop",
+    caption: "First time we hung out",
+  },
+  {
+    id: 2,
+    image:
+      "https://images.unsplash.com/photo-1537633552985-df8429e8048b?w=600&h=480&fit=crop",
+    caption: "That one on campus",
+  },
+  {
+    id: 3,
+    image:
+      "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&h=480&fit=crop",
+    caption: "A random Tuesday",
+  },
+  {
+    id: 4,
+    image:
+      "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&h=480&fit=crop",
+    caption: "A favorite city corner",
+  },
+  {
+    id: 5,
+    image:
+      "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&h=480&fit=crop",
+    caption: "Weekend walks, shared dreams",
+  },
+  {
+    id: 6,
+    image:
+      "https://images.unsplash.com/photo-1470246973918-29a93221c455?w=600&h=480&fit=crop",
+    caption: "Adventures that brought us closer",
+  },
+  {
+    id: 7,
+    image:
+      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=600&h=480&fit=crop",
+    caption: "Everything felt right",
+  },
+  {
+    id: 8,
+    image:
+      "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=600&h=480&fit=crop",
+    caption: "Counting days together",
+  },
+  {
+    id: 9,
+    image:
+      "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=600&h=480&fit=crop",
+    caption: "Ready for forever",
+  },
 ];
 
-const TOTAL = PHOTOS.length;
+const TOTAL = DEFAULT_PHOTOS.length;
 
 // How much scroll distance (in % of viewport height) we need to complete the animation.
 const EXTRA_VH = TOTAL * 45;
@@ -75,19 +119,20 @@ const CH = 360;
 // Stacked downwards vertically (no horizontal stagger) to lay them out straight
 const STACK: Array<{ x: number; y: number; rotate: number }> = [
   { x: 0, y: -100, rotate: -1.5 },
-  { x: 0, y: -75,  rotate: 1 },
-  { x: 0, y: -50,  rotate: -0.8 },
-  { x: 0, y: -25,  rotate: 1.2 },
-  { x: 0, y: 0,    rotate: -1 },
-  { x: 0, y: 25,   rotate: 0.5 },
-  { x: 0, y: 50,   rotate: -1.2 },
-  { x: 0, y: 75,   rotate: 1 },
-  { x: 0, y: 100,  rotate: -0.5 },
+  { x: 0, y: -75, rotate: 1 },
+  { x: 0, y: -50, rotate: -0.8 },
+  { x: 0, y: -25, rotate: 1.2 },
+  { x: 0, y: 0, rotate: -1 },
+  { x: 0, y: 25, rotate: 0.5 },
+  { x: 0, y: 50, rotate: -1.2 },
+  { x: 0, y: 75, rotate: 1 },
+  { x: 0, y: 100, rotate: -0.5 },
 ];
 
 // Derive chapter from photo index (0-based)
-const getChapter = (idx: number): Chapter =>
-  CHAPTERS.find((c) => idx + 1 >= c.startPhoto && idx + 1 <= c.endPhoto) ?? CHAPTERS[0];
+const getChapterFromList = (chaptersList: Chapter[], idx: number): Chapter =>
+  chaptersList.find((c) => idx + 1 >= c.startPhoto && idx + 1 <= c.endPhoto) ??
+  chaptersList[0];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -101,7 +146,15 @@ interface PhotoCardProps {
   onClick: () => void;
 }
 
-function PhotoCard({ photo, index, activeIdx, hoveredId, onHover, onLeave, onClick }: PhotoCardProps) {
+function PhotoCard({
+  photo,
+  index,
+  activeIdx,
+  hoveredId,
+  onHover,
+  onLeave,
+  onClick,
+}: PhotoCardProps) {
   const isTop = index === activeIdx;
   const isHovered = hoveredId === photo.id;
 
@@ -118,8 +171,12 @@ function PhotoCard({ photo, index, activeIdx, hoveredId, onHover, onLeave, onCli
           y: isHovered ? -16 : 0,
           scale: isHovered ? 1.05 : 1,
           boxShadow: isTop
-            ? isHovered ? "0 20px 50px rgba(40,29,25,0.22)" : "0 8px 26px rgba(40,29,25,0.12)"
-            : isHovered ? "0 6px 18px rgba(40,29,25,0.1)" : "0 3px 12px rgba(40,29,25,0.08)",
+            ? isHovered
+              ? "0 20px 50px rgba(40,29,25,0.22)"
+              : "0 8px 26px rgba(40,29,25,0.12)"
+            : isHovered
+              ? "0 6px 18px rgba(40,29,25,0.1)"
+              : "0 3px 12px rgba(40,29,25,0.08)",
         }}
         transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
       >
@@ -128,7 +185,11 @@ function PhotoCard({ photo, index, activeIdx, hoveredId, onHover, onLeave, onCli
           src={photo.image}
           alt={photo.caption}
           className="pointer-events-none rounded-[2px]"
-          style={{ width: "var(--card-width)", height: "var(--card-height)", objectFit: "cover" }}
+          style={{
+            width: "var(--card-width)",
+            height: "var(--card-height)",
+            objectFit: "cover",
+          }}
           draggable={false}
         />
         <p className="absolute bottom-3 left-0 right-0 text-center text-[10px] md:text-[13px] text-[#281D19]/50 italic font-['Instrument_Serif'] whitespace-nowrap">
@@ -138,12 +199,25 @@ function PhotoCard({ photo, index, activeIdx, hoveredId, onHover, onLeave, onCli
     </div>
   );
 }
- 
-function ChapterText({ chapter, prevChapter }: { chapter: Chapter; prevChapter: Chapter | null }) {
+
+function ChapterText({
+  chapter,
+  prevChapter,
+}: {
+  chapter: Chapter;
+  prevChapter: Chapter | null;
+}) {
   const isLeft = chapter.side === "left";
   // First render: fade in from center. Chapter change: slide in from opposite side
   const enterFrom = prevChapter ? (prevChapter.side === "left" ? 40 : -40) : 0;
- 
+  const roman = chapter.id === 1 ? "I" : chapter.id === 2 ? "II" : "III";
+  const phaseTag =
+    chapter.id === 1
+      ? "The Beginning"
+      : chapter.id === 2
+        ? "The Journey"
+        : "The Forever";
+
   return (
     <motion.div
       className="absolute inset-0 z-30 pointer-events-none"
@@ -153,35 +227,89 @@ function ChapterText({ chapter, prevChapter }: { chapter: Chapter; prevChapter: 
       transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
     >
       <div
-        className={`px-8 md:px-0 w-full md:w-auto absolute bottom-[14%] md:bottom-auto md:top-[calc(50%-calc(var(--card-height)/2)-12px)] md:translate-y-0 md:flex md:flex-col ${
+        className={`px-8 md:px-0 w-full md:w-auto absolute bottom-[12%] md:bottom-auto md:top-[calc(50%-calc(var(--card-height)/2)-16px)] md:translate-y-0 md:flex md:flex-col ${
           isLeft
-            ? "md:right-[calc(50vw+calc(var(--card-width)/2)+32px)] md:left-12 text-center md:text-right md:items-end"
-            : "md:left-[calc(50vw+calc(var(--card-width)/2)+32px)] md:right-12 text-center md:text-left md:items-start"
+            ? "md:right-[calc(50vw+calc(var(--card-width)/2)+36px)] md:left-12 text-center md:text-right md:items-end"
+            : "md:left-[calc(50vw+calc(var(--card-width)/2)+36px)] md:right-12 text-center md:text-left md:items-start"
         }`}
       >
-        <h3 className="font-['Instrument_Serif'] text-lg md:text-2xl italic text-[#281D19] mb-2">{chapter.title}</h3>
-        <p className="text-[11px] md:text-sm text-[#281D19]/60 leading-relaxed max-w-[240px] md:max-w-[260px] mx-auto md:mx-0">{chapter.description}</p>
+        {/* Minimalist Chapter Subtitle */}
+        <p
+          className={`text-[10px] md:text-xs uppercase tracking-[0.2em] text-[#281D19]/50 font-serif mb-1 ${isLeft ? "md:text-right" : "md:text-left"}`}
+        >
+          Chapter {roman}
+        </p>
+
+        <h3 className="font-['Instrument_Serif'] text-xl md:text-3xl italic text-[#281D19] mb-2 leading-tight">
+          {chapter.title}
+        </h3>
+        <p className="text-[11px] md:text-sm text-[#281D19]/70 leading-relaxed max-w-[260px] md:max-w-[280px] mx-auto md:mx-0 font-sans">
+          {chapter.description}
+        </p>
       </div>
     </motion.div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-
-export function OurStory() {
+export function OurStory({
+  couple: propCouple,
+}: {
+  couple?: CoupleProject | null;
+}) {
+  const { currentCouple: contextCouple } = useAuth();
+  const couple = propCouple || contextCouple;
   const [lightboxPhoto, setLightboxPhoto] = useState<StoryImage | null>(null);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [currentChapter, setCurrentChapter] = useState<Chapter>(CHAPTERS[0]);
+
+  // Dynamic Chapters from couple
+  const coupleChapters = couple?.storyChapters || [];
+  const chapters: Chapter[] = DEFAULT_CHAPTERS.map((def, i) => {
+    const custom =
+      coupleChapters.find((c) => c.id === def.id) || coupleChapters[i];
+    return {
+      ...def,
+      title: custom?.title || def.title,
+      description: custom?.description || def.description,
+    };
+  });
+
+  const [currentChapter, setCurrentChapter] = useState<Chapter>(chapters[0]);
   const [prevChapter, setPrevChapter] = useState<Chapter | null>(null);
   const [hasScrolled, setHasScrolled] = useState(false);
+
+  // Dynamic 9 story photos from couple
+  const allPhotos = couple?.galleryPhotos || [];
+  const storyIds = couple?.storyPhotoIds || [];
+
+  const photos: StoryImage[] = Array.from({ length: 9 }).map((_, i) => {
+    let url = DEFAULT_PHOTOS[i]?.image || DEFAULT_PHOTOS[0].image;
+    let caption = DEFAULT_PHOTOS[i]?.caption || `Chapter memory #${i + 1}`;
+
+    if (storyIds[i]) {
+      const found = allPhotos.find((p) => p.id === storyIds[i]);
+      if (found) {
+        url = found.url;
+        if (found.caption) caption = found.caption;
+      }
+    } else if (allPhotos[i]) {
+      url = allPhotos[i].url;
+      if (allPhotos[i].caption) caption = allPhotos[i].caption;
+    }
+
+    return {
+      id: i + 1,
+      image: getFileUrl(url),
+      caption: caption,
+    };
+  });
 
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Framer Motion useScroll tracks container scroll progress cleanly, with zero DOM manipulation
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end end"]
+    offset: ["start start", "end end"],
   });
 
   useEffect(() => {
@@ -193,14 +321,14 @@ export function OurStory() {
         setActiveIdx(newIdx);
 
         // Update chapter
-        const ch = getChapter(newIdx);
+        const ch = getChapterFromList(chapters, newIdx);
         if (ch.id !== currentChapter.id) {
           setPrevChapter(currentChapter);
           setCurrentChapter(ch);
         }
       }
     });
-  }, [scrollYProgress, activeIdx, currentChapter]);
+  }, [scrollYProgress, activeIdx, currentChapter, chapters]);
 
   useEffect(() => {
     if (lightboxPhoto) {
@@ -223,15 +351,13 @@ export function OurStory() {
       style={{ height: `${100 + EXTRA_VH}vh` }} // Tall container provides the scroll distance natively
     >
       {/* Sticky viewport content: browser handles pinning natively via CSS sticky */}
-      <section
-        className="sticky top-0 bg-[#FAF5EE] h-screen w-full overflow-hidden"
-      >
+      <section className="sticky top-0 bg-[#FAFAF9] h-screen w-full overflow-hidden">
         {/* Viewport content */}
         <div className="relative h-screen w-full overflow-hidden">
           {/* Heading */}
           <div className="pt-8 sm:pt-12 px-4 sm:px-6">
             <h2 className="font-['Instrument_Serif'] text-5xl sm:text-7xl md:text-8xl lg:text-9xl italic text-center text-[#281D19] tracking-tight">
-              our story
+              Our story
             </h2>
           </div>
 
@@ -247,7 +373,7 @@ export function OurStory() {
           {/* Photo stack — always centered, Framer Motion drives animations based on activeIdx */}
           <div className="absolute inset-0 flex items-center justify-center translate-y-2">
             <div className="relative">
-              {PHOTOS.map((photo, i) => {
+              {photos.map((photo, i) => {
                 const isActive = i === activeIdx;
                 const isPast = i < activeIdx;
                 const depth = activeIdx - i; // distance in the past for stacked cards
@@ -302,7 +428,7 @@ export function OurStory() {
                       translate: "-50% -50%",
                       width: "calc(var(--card-width) + 16px)",
                       height: "calc(var(--card-height) + 48px)",
-                      zIndex: zIndex
+                      zIndex: zIndex,
                     }}
                     animate={{
                       opacity: targetOpacity,
@@ -314,7 +440,7 @@ export function OurStory() {
                     }}
                     transition={{
                       duration: 0.45,
-                      ease: [0.25, 0.1, 0.25, 1]
+                      ease: [0.25, 0.1, 0.25, 1],
                     }}
                   >
                     <PhotoCard

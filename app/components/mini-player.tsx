@@ -1,14 +1,58 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import Particles from "./Particles";
+import { useAuth } from "~/contexts/auth-context";
+import { getFileUrl } from "~/lib/api";
+import { formatGuestName } from "~/lib/utils";
+import { DEFAULT_TEMPLATE_COUPLE } from "~/lib/mock-data";
 
 export function MiniPlayer() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [opened, setOpened] = useState(false);
 
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const { currentCouple, couples } = useAuth();
+
+  // Extract personalized guest name from query params (?to=...) or path params (/:slug/:guestName)
+  const queryGuest = searchParams.get("to");
+  let pathGuest = "";
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  if (pathParts.length >= 2 && pathParts[0] !== "dashboard" && pathParts[0] !== "login") {
+    pathGuest = pathParts[1];
+  }
+
+  const rawGuestName = queryGuest || pathGuest;
+  const formattedGuestName = formatGuestName(rawGuestName);
+
+  const activeSlug = pathParts[0] || "template";
+  const couple =
+    activeSlug === "template"
+      ? DEFAULT_TEMPLATE_COUPLE
+      : couples.find((c) => c.slug.toLowerCase() === activeSlug.toLowerCase()) || currentCouple || DEFAULT_TEMPLATE_COUPLE;
+
+  const groomFirst = couple?.groomName ? couple.groomName.split(" ")[0] : "Jim";
+  const brideFirst = couple?.brideName ? couple.brideName.split(" ")[0] : "Pam";
+  const coupleTitle = `${groomFirst} & ${brideFirst}`;
+
+  const audioSrc = couple?.musicUrl ? getFileUrl(couple.musicUrl) : "/shape_of_my_heart.mp3";
+
   const handleOpen = () => {
-    audioRef.current?.play().then(() => setIsPlaying(true)).catch(() => {});
+    const audio = audioRef.current;
+    if (audio) {
+      audio.currentTime = 0;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch((err) => {
+            console.warn("Audio autoplay blocked by browser policy:", err);
+            setIsPlaying(false);
+          });
+      }
+    }
     window.scrollTo(0, 0);
     setOpened(true);
   };
@@ -16,12 +60,17 @@ export function MiniPlayer() {
   const toggle = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (isPlaying) {
-      audio.pause();
+    if (audio.paused) {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch((err) => console.error("Audio play error:", err));
+      }
     } else {
-      audio.play();
+      audio.pause();
+      setIsPlaying(false);
     }
-    setIsPlaying(!isPlaying);
   };
 
   useEffect(() => {
@@ -32,7 +81,14 @@ export function MiniPlayer() {
 
   return (
     <>
-      <audio ref={audioRef} src="/shape_of_my_heart.mp3" loop />
+      <audio
+        ref={audioRef}
+        src={audioSrc}
+        loop
+        preload="auto"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
 
       <AnimatePresence>
         {!opened && (
@@ -41,7 +97,7 @@ export function MiniPlayer() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0, y: "-100%" }}
             transition={{ duration: 0.8, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#FAF5EE]"
+            className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-[#FAFAF9] select-none"
           >
             <div className="absolute inset-0">
               <Particles
@@ -59,22 +115,43 @@ export function MiniPlayer() {
                 className=""
               />
             </div>
+
+            {/* Subtitle */}
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="relative z-10 font-['Instrument_Serif'] text-[#C86D51] text-xs tracking-[0.4em] uppercase mb-6 font-medium"
+              className="relative z-10 font-['Instrument_Serif'] text-[#C86D51] text-xs sm:text-sm tracking-[0.45em] uppercase mb-3 sm:mb-4 font-medium"
             >
               The Wedding of
             </motion.p>
+
+            {/* Couple Name */}
             <motion.h1
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-              className="relative z-10 font-['Instrument_Serif'] text-[#281D19] text-5xl sm:text-6xl md:text-7xl italic text-center px-4"
+              className="relative z-10 font-['Instrument_Serif'] text-[#281D19] text-5xl sm:text-6xl md:text-7xl lg:text-8xl italic text-center px-6 py-3 tracking-wide"
             >
-              Jim & Pam
+              {coupleTitle}
             </motion.h1>
+
+            {/* Personalized Guest Box */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65, duration: 0.7 }}
+              className="relative z-10 mt-8 sm:mt-10 md:mt-12 text-center max-w-md px-6 py-2"
+            >
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.25em] text-[#C86D51] font-semibold mb-1.5">
+                Kepada Yth. Bapak/Ibu/Saudara/i:
+              </p>
+              <p className="text-lg sm:text-xl md:text-2xl text-[#281D19] font-medium tracking-normal">
+                {formattedGuestName || "Tamu Undangan"}
+              </p>
+            </motion.div>
+
+            {/* Open Invitation Button */}
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -82,7 +159,7 @@ export function MiniPlayer() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleOpen}
-              className="relative z-10 mt-12 rounded-full bg-[#C86D51] px-8 py-3 text-sm font-medium text-[#FAF5EE] tracking-wider uppercase shadow-md transition-all duration-300 hover:bg-[#B85D42] cursor-pointer"
+              className="relative z-10 mt-8 sm:mt-10 rounded-full bg-[#C86D51] px-8 py-3 text-xs sm:text-sm font-medium text-white tracking-widest uppercase shadow-md transition-all duration-300 hover:bg-[#B85D42] cursor-pointer"
             >
               Open Invitation
             </motion.button>
@@ -98,7 +175,7 @@ export function MiniPlayer() {
             transition={{ delay: 0.5, type: "spring", stiffness: 200, damping: 15 }}
             onClick={toggle}
             aria-label={isPlaying ? "Pause music" : "Play music"}
-            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-[#FAF5EE]/90 text-[#281D19] border border-[#E8DCCD] shadow-lg backdrop-blur-sm transition-transform hover:scale-105"
+            className="fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-[#281D19] border border-[#E7E5E4] shadow-lg backdrop-blur-sm transition-transform hover:scale-105"
           >
             <motion.span
               key={isPlaying ? "pause" : "play"}

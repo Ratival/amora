@@ -5,3 +5,9 @@
 # React Router
 /.react-router/
 /build/
+
+# Go / Server
+server/server
+server/tmp/
+server/uploads/*
+!server/uploads/.gitkeep

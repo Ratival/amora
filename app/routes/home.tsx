@@ -1,13 +1,13 @@
 import type { Route } from "./+types/home";
-import { Welcome } from "../pages/welcome/welcome";
+import { LandingPage } from "../pages/landing-page";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Amora — Platform Undangan Pernikahan Digital" },
+    { name: "description", content: "Platform pembuatan website undangan pernikahan digital eksklusif, modern, dan interaktif by Ratival." },
   ];
 }
 
 export default function Home() {
-  return <Welcome />;
+  return <LandingPage />;
 }

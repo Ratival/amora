@@ -5,9 +5,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import { ThemeProvider } from "./components/theme-provider";
+import { AuthProvider } from "./contexts/auth-context";
+import { Toaster } from "./components/ui/sonner";
 import { MiniPlayer } from "./components/mini-player";
 import { SmoothScroll } from "./components/smooth-scroll";
 import "./app.css";
@@ -25,19 +29,51 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+function PublicInvitationOverlays() {
+  const location = useLocation();
+  const pathname = location.pathname;
+
+  // Only render invitation cover envelope and music player on actual invitation routes (e.g. /:slug, /:slug/:guestName)
+  // Exclude root SaaS landing page ("/"), login ("/login"), and dashboard routes
+  const isInvitationRoute =
+    pathname !== "/" &&
+    !pathname.includes("/dashboard") &&
+    !pathname.startsWith("/login");
+
+  if (!isInvitationRoute) {
+    return null;
+  }
+
+  return (
+    <>
+      <MiniPlayer />
+      <SmoothScroll />
+    </>
+  );
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="light" style={{ colorScheme: "light" }}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body>
-        {children}
-        <MiniPlayer />
-        <SmoothScroll />
+      <body className="bg-white text-neutral-900 antialiased">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          forcedTheme="light"
+          enableSystem={false}
+        >
+          <AuthProvider>
+            {children}
+            <PublicInvitationOverlays />
+            <Toaster position="top-right" richColors theme="light" />
+          </AuthProvider>
+        </ThemeProvider>
         <ScrollRestoration />
         <Scripts />
       </body>

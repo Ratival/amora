@@ -1,0 +1,95 @@
+services:
+  # ---------- Frontend (React Router 7 SPA / Bun) ----------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+      target: runner
+      args:
+        - VITE_API_URL=${VITE_API_URL:-}
+    container_name: amora-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-}
+      - PORT=3000
+      - NODE_ENV=production
+    networks:
+      - dokploy-network
+      - amora-internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.amora-frontend.rule=Host(`${DOMAIN:-amora.ratival.com}`)"
+      - "traefik.http.routers.amora-frontend.entrypoints=websecure"
+      - "traefik.http.routers.amora-frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.amora-frontend.loadbalancer.server.port=3000"
+
+  # ---------- Backend (Go Gin REST API) ----------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+      target: runner
+    container_name: amora-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads-data:/app/uploads
+    environment:
+      - APP_PORT=8080
+      - GIN_MODE=release
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-amora_user}
+      - DB_PASSWORD=${DB_PASSWORD:-amora_secure_password}
+      - DB_NAME=${DB_NAME:-amora}
+      - DB_SSLMODE=disable
+      - JWT_SECRET=${JWT_SECRET:-s/DP7oiKIhnfd6fyoNSlue48oQz7+y+Y/NAJde6OxzU=}
+      - APP_URL=${APP_URL:-https://amora.ratival.com}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@ratival.com}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-amora@rativ2026}
+      - UPLOAD_PATH=/app/uploads
+      - MAX_FILE_SIZE=52428800
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dokploy-network
+      - amora-internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.amora-backend.rule=Host(`${API_DOMAIN:-api.amora.ratival.com}`) || (Host(`${DOMAIN:-amora.ratival.com}`) && (PathPrefix(`/api`) || PathPrefix(`/uploads`)))"
+      - "traefik.http.routers.amora-backend.entrypoints=websecure"
+      - "traefik.http.routers.amora-backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.amora-backend.loadbalancer.server.port=8080"
+
+  # ---------- Database (PostgreSQL 16) ----------
+  postgres:
+    image: postgres:16-alpine
+    container_name: amora-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-amora_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-amora_secure_password}
+      POSTGRES_DB: ${DB_NAME:-amora}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-amora_user} -d ${DB_NAME:-amora}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - amora-internal
+
+networks:
+  dokploy-network:
+    external: true
+  amora-internal:
+    driver: bridge
+
+volumes:
+  uploads-data:
+  postgres-data:

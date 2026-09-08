@@ -1,0 +1,52 @@
+services:
+  # ---------- Frontend (React Router / Vite) ----------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: amora-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app:cached
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:8080
+    command: bun run dev
+    networks:
+      - shared-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.amora-frontend.rule=Host(`localhost`,`127.0.0.1`)"
+      - "traefik.http.routers.amora-frontend.entrypoints=websecure"
+      - "traefik.http.routers.amora-frontend.service=amora-frontend-service"
+      - "traefik.http.services.amora-frontend-service.loadbalancer.server.port=5173"
+
+  # ---------- Backend (Go / Gin) ----------
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+      target: dev
+    container_name: amora-backend
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - ./server:/app:cached
+      - ./server/uploads:/app/uploads
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=${DOCKER_DB_HOST:-postgres}
+      - GIN_MODE=debug
+    command: air -c .air.toml
+    networks:
+      - shared-net
+
+networks:
+  shared-net:
+    external: true

@@ -1,7 +1,11 @@
 import { motion } from "motion/react";
 import Masonry, { type MasonryItem } from "./Masonry";
+import { useAuth } from "~/contexts/auth-context";
+import { getFileUrl } from "~/lib/api";
+import type { CoupleProject } from "~/types/dashboard";
 
-const GALLERY_ITEMS: MasonryItem[] = [
+const DEFAULT_GALLERY_ITEMS: MasonryItem[] = [
+
   {
     id: "1",
     img: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=700&h=950&fit=crop",
@@ -54,9 +58,24 @@ const GALLERY_ITEMS: MasonryItem[] = [
   },
 ];
 
-export function GallerySection() {
+const HEIGHT_PATTERNS = [750, 480, 680, 420, 720, 520, 640, 460, 700, 500, 620, 540, 710, 490, 650];
+
+export function GallerySection({ couple: propCouple }: { couple?: CoupleProject | null }) {
+  const { currentCouple: contextCouple } = useAuth();
+  const couple = propCouple || contextCouple;
+  const couplePhotos = couple?.galleryPhotos || [];
+
+  const items: MasonryItem[] = couplePhotos.length > 0
+    ? couplePhotos.map((p, i) => ({
+        id: p.id,
+        img: getFileUrl(p.url),
+        height: HEIGHT_PATTERNS[i % HEIGHT_PATTERNS.length],
+      }))
+    : DEFAULT_GALLERY_ITEMS;
+
+
   return (
-    <section className="relative w-full bg-[#FAF5EE] pt-16 pb-28 sm:pb-36 overflow-hidden">
+    <section className="relative w-full bg-[#FAFAF9] pt-16 pb-28 sm:pb-36 overflow-hidden">
       {/* Section Header */}
       <div className="max-w-4xl mx-auto text-center px-6 mb-12 sm:mb-16">
         <motion.p
@@ -75,14 +94,14 @@ export function GallerySection() {
           transition={{ duration: 0.7, delay: 0.1 }}
           className="font-['Instrument_Serif'] text-5xl sm:text-7xl md:text-8xl italic text-[#281D19] tracking-tight"
         >
-          our gallery
+          Our gallery
         </motion.h2>
       </div>
 
       {/* Full width Masonry layout */}
       <div className="w-full px-2 sm:px-4 md:px-6">
         <Masonry
-          items={GALLERY_ITEMS}
+          items={items}
           ease="power3.out"
           duration={0.7}
           stagger={0.06}
