@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/Ratival/amora/server/internal/models"
 	"github.com/Ratival/amora/server/pkg/utils"
@@ -143,20 +144,22 @@ func SeedData(db *gorm.DB) {
 	if adminEmail == "" {
 		adminEmail = "admin@ratival.com"
 	}
+	adminEmail = strings.TrimSpace(strings.ToLower(adminEmail))
 	adminPassword := os.Getenv("ADMIN_PASSWORD")
 	if adminPassword == "" {
 		adminPassword = "amora@rativ2026"
 	}
+	adminPassword = strings.TrimSpace(adminPassword)
 	hashedPass, _ := utils.HashPassword(adminPassword)
 
 	// 1. Clean up legacy boilerplate accounts and ensure ONLY 1 Super Admin exists
 	db.Unscoped().Where("email LIKE ? OR email LIKE ?", "%@amora.id", "%@amora.io").Delete(&models.User{})
 	db.Unscoped().Where("email IN ?", []string{"romeo.juliet@ratival.com", "devano.clara@ratival.com", "demo@amora.id", "jim.pam@ratival.com"}).Delete(&models.User{})
 	db.Unscoped().Where("slug IN ?", []string{"romeo-juliet", "devano-clara", "jim-pam"}).Delete(&models.Couple{})
-	db.Unscoped().Where("role = ? AND email != ?", "admin", adminEmail).Delete(&models.User{})
+	db.Unscoped().Where("role = ? AND LOWER(email) != LOWER(?)", "admin", adminEmail).Delete(&models.User{})
 
 	var adminUser models.User
-	err := db.Unscoped().Where("email = ?", adminEmail).First(&adminUser).Error
+	err := db.Unscoped().Where("LOWER(email) = LOWER(?)", adminEmail).First(&adminUser).Error
 	if err != nil {
 		adminUser = models.User{
 			Name:     "Admin Amora",
