@@ -60,7 +60,7 @@ services:
       - amora-internal
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.amora-backend.rule=Host(`${API_DOMAIN:-api.amora.ratival.com}`) || (Host(`${DOMAIN:-amora.ratival.com}`) && (PathPrefix(`/api`) || PathPrefix(`/uploads`)))"
+      - "traefik.http.routers.amora-backend.rule=Host(`${API_DOMAIN:-api-amora.ratival.com}`) || (Host(`${DOMAIN:-amora.ratival.com}`) && (PathPrefix(`/api`) || PathPrefix(`/uploads`)))"
       - "traefik.http.routers.amora-backend.entrypoints=websecure"
       - "traefik.http.routers.amora-backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.amora-backend.loadbalancer.server.port=8080"

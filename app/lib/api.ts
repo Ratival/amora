@@ -11,10 +11,10 @@ export const API_HOST_URL = (() => {
     const host = window.location.hostname;
     if (host !== "localhost" && host !== "127.0.0.1") {
       if (host === "amora.ratival.com" || host.endsWith(".ratival.com")) {
-        return "https://api.amora.ratival.com";
+        return "https://api-amora.ratival.com";
       }
-      if (!host.startsWith("api.")) {
-        return `${window.location.protocol}//api.${host}`;
+      if (!host.startsWith("api-") && !host.startsWith("api.")) {
+        return `${window.location.protocol}//api-${host}`;
       }
       return window.location.origin;
     }
