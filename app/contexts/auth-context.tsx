@@ -467,7 +467,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = React.useCallback(
     async (email: string, password?: string) => {
-      const res = await api.auth.login(email, password || "password123");
+      const res = await api.auth.login(email, password || "");
       if (res.success && res.data) {
         const u: User = {
           id: res.data.user.id,
@@ -493,47 +493,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { success: true, redirectUrl };
       }
 
-      // Offline / Local mock fallback for testing
-      const cleanEmail = email.trim().toLowerCase();
-      const foundUser = users.find((u) => u.email.toLowerCase() === cleanEmail);
-      if (foundUser) {
-        setCurrentUser(foundUser);
-        let redirectUrl = "/dashboard";
-        if (foundUser.role === "couple" && foundUser.coupleSlug) {
-          redirectUrl = `/${foundUser.coupleSlug}/dashboard`;
-          setActiveSlug(foundUser.coupleSlug);
-        }
-        navigate(redirectUrl);
-        return { success: true, redirectUrl };
-      }
-
-      // If couple email matching a couple slug in couples list
-      const matchedCouple = couples.find((c) => c.ownerEmail?.toLowerCase() === cleanEmail || `${c.slug}@ratival.com`.toLowerCase() === cleanEmail);
-      if (matchedCouple) {
-        const coupleUser: User = {
-          id: `usr-${matchedCouple.slug}`,
-          name: `${matchedCouple.groomName} & ${matchedCouple.brideName}`,
-          email: cleanEmail,
-          role: "couple",
-          coupleSlug: matchedCouple.slug,
-          coupleNames: `${matchedCouple.groomName} & ${matchedCouple.brideName}`,
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        };
-        setCurrentUser(coupleUser);
-        const redirectUrl = `/${matchedCouple.slug}/dashboard`;
-        setActiveSlug(matchedCouple.slug);
-        navigate(redirectUrl);
-        return { success: true, redirectUrl };
-      }
-
       return {
         success: false,
         redirectUrl: "",
-        message: res.message || "Email atau password salah",
+        message: res.message || "Email atau kata sandi salah",
       };
     },
-    [navigate, refreshData, users, couples]
+    [navigate, refreshData]
   );
 
   const logout = React.useCallback(() => {

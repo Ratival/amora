@@ -15,7 +15,7 @@ export const INITIAL_COUPLES: CoupleProject[] = [
     id: "cpl-template",
     slug: "template",
     title: "Amora Wedding Invitation (Demo Template)",
-    ownerEmail: "admin@ratival.com",
+    ownerEmail: "template@ratival.com",
     groomName: "Jim Halpert",
     groomParents: "Putra dari Bpk. Gerald Halpert & Ibu Betsy Halpert",
     groomBio: "A paper salesman with a penchant for pranks and eternal love for Pam.",

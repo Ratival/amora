@@ -1,13 +1,26 @@
 // Typed API client for Amora Go/PostgreSQL Backend
 
-export const API_HOST_URL =
-  (typeof window !== "undefined" && (window as any).__AMORA_API_URL__) ||
-  (import.meta.env?.VITE_API_URL ? import.meta.env.VITE_API_URL : "") ||
-  (typeof window !== "undefined" &&
-  window.location.hostname !== "localhost" &&
-  window.location.hostname !== "127.0.0.1"
-    ? window.location.origin
-    : "http://localhost:8080");
+export const API_HOST_URL = (() => {
+  if (typeof window !== "undefined" && (window as any).__AMORA_API_URL__) {
+    return (window as any).__AMORA_API_URL__;
+  }
+  if (import.meta.env?.VITE_API_URL && typeof import.meta.env.VITE_API_URL === "string" && import.meta.env.VITE_API_URL.trim() !== "") {
+    return import.meta.env.VITE_API_URL.trim();
+  }
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (host !== "localhost" && host !== "127.0.0.1") {
+      if (host === "amora.ratival.com" || host.endsWith(".ratival.com")) {
+        return "https://api.amora.ratival.com";
+      }
+      if (!host.startsWith("api.")) {
+        return `${window.location.protocol}//api.${host}`;
+      }
+      return window.location.origin;
+    }
+  }
+  return "http://localhost:8080";
+})();
 
 export const API_BASE_URL = API_HOST_URL.endsWith("/api/v1")
   ? API_HOST_URL
